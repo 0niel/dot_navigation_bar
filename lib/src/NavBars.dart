@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'DotNavigationBarItem.dart';
 
-class DotNavigationBar extends StatelessWidget {
+class DotNavigationBar extends StatefulWidget {
   const DotNavigationBar({
     super.key,
     required this.items,
@@ -90,11 +90,34 @@ class DotNavigationBar extends StatelessWidget {
   ///
   /// To disable, use `Colors.transparent`
   final double? splashBorderRadius;
+
+  @override
+  _DotNavigationBarState createState() => _DotNavigationBarState();
+}
+
+class _DotNavigationBarState extends State<DotNavigationBar> {
+  late int _previousIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _previousIndex = widget.currentIndex;
+  }
+
+  void _handleTap(int newIndex) {
+    if (widget.onTap != null) {
+      widget.onTap!(newIndex);
+    }
+    setState(() {
+      _previousIndex = widget.currentIndex;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return enableFloatingNavBar
+    return widget.enableFloatingNavBar
         ? BottomAppBar(
             color: Colors.transparent,
             elevation: 0,
@@ -102,31 +125,32 @@ class DotNavigationBar extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Padding(
-                  padding: marginR!,
+                  padding: widget.marginR!,
                   child: Container(
-                    padding: paddingR,
+                    padding: widget.paddingR,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(borderRadius!),
-                      color: backgroundColor,
-                      boxShadow: boxShadow,
+                      borderRadius: BorderRadius.circular(widget.borderRadius!),
+                      color: widget.backgroundColor,
+                      boxShadow: widget.boxShadow,
                     ),
                     width: double.infinity,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Body(
-                          items: items,
-                          currentIndex: currentIndex,
-                          curve: curve,
-                          duration: duration,
-                          selectedItemColor: selectedItemColor,
+                          items: widget.items,
+                          currentIndex: widget.currentIndex,
+                          previousIndex: _previousIndex,
+                          curve: widget.curve,
+                          duration: widget.duration,
+                          selectedItemColor: widget.selectedItemColor,
                           theme: theme,
-                          unselectedItemColor: unselectedItemColor,
-                          onTap: onTap!,
-                          itemPadding: itemPadding,
-                          dotIndicatorColor: dotIndicatorColor,
-                          enablePaddingAnimation: enablePaddingAnimation,
-                          splashColor: splashColor,
-                          splashBorderRadius: splashBorderRadius),
+                          unselectedItemColor: widget.unselectedItemColor,
+                          onTap: _handleTap,
+                          itemPadding: widget.itemPadding,
+                          dotIndicatorColor: widget.dotIndicatorColor,
+                          enablePaddingAnimation: widget.enablePaddingAnimation,
+                          splashColor: widget.splashColor,
+                          splashBorderRadius: widget.splashBorderRadius),
                     ),
                   ),
                 ),
@@ -135,23 +159,24 @@ class DotNavigationBar extends StatelessWidget {
           )
         : Container(
             padding: EdgeInsets.symmetric(vertical: 12),
-            color: backgroundColor,
+            color: widget.backgroundColor,
             child: Padding(
-              padding: margin,
+              padding: widget.margin,
               child: Body(
-                  items: items,
-                  currentIndex: currentIndex,
-                  curve: curve,
-                  duration: duration,
-                  selectedItemColor: selectedItemColor,
+                  items: widget.items,
+                  currentIndex: widget.currentIndex,
+                  previousIndex: _previousIndex,
+                  curve: widget.curve,
+                  duration: widget.duration,
+                  selectedItemColor: widget.selectedItemColor,
                   theme: theme,
-                  unselectedItemColor: unselectedItemColor,
-                  onTap: onTap!,
-                  itemPadding: itemPadding,
-                  dotIndicatorColor: dotIndicatorColor,
-                  enablePaddingAnimation: enablePaddingAnimation,
-                  splashColor: splashColor,
-                  splashBorderRadius: splashBorderRadius),
+                  unselectedItemColor: widget.unselectedItemColor,
+                  onTap: _handleTap,
+                  itemPadding: widget.itemPadding,
+                  dotIndicatorColor: widget.dotIndicatorColor,
+                  enablePaddingAnimation: widget.enablePaddingAnimation,
+                  splashColor: widget.splashColor,
+                  splashBorderRadius: widget.splashBorderRadius),
             ),
           );
   }

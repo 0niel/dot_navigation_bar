@@ -8,6 +8,7 @@ class Body extends StatelessWidget {
     super.key,
     required this.items,
     required this.currentIndex,
+    required this.previousIndex,
     required this.curve,
     required this.duration,
     required this.selectedItemColor,
@@ -23,6 +24,7 @@ class Body extends StatelessWidget {
 
   final List<DotNavigationBarItem> items;
   final int currentIndex;
+  final int previousIndex;
   final Curve curve;
   final Duration duration;
   final Color? selectedItemColor;
@@ -34,6 +36,7 @@ class Body extends StatelessWidget {
   final bool enablePaddingAnimation;
   final Color? splashColor;
   final double? splashBorderRadius;
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -47,72 +50,68 @@ class Body extends StatelessWidget {
             curve: curve,
             duration: duration,
             builder: (context, t, _) {
-              final _selectedColor =
-                  item.selectedColor ?? selectedItemColor ?? theme.primaryColor;
+              final _selectedColor = item.selectedColor ?? selectedItemColor ?? theme.primaryColor;
 
-              final _unselectedColor = item.unselectedColor ??
-                  unselectedItemColor ??
-                  theme.iconTheme.color;
+              final _unselectedColor = item.unselectedColor ?? unselectedItemColor ?? theme.iconTheme.color;
+
+              final int itemIndex = items.indexOf(item);
+              final bool isMovingForward = currentIndex > previousIndex;
+              final bool isCurrentItem = itemIndex == currentIndex;
+              final bool isPreviousItem = itemIndex == previousIndex;
+
+              Alignment alignment = Alignment.bottomCenter;
+              if (isCurrentItem) {
+                alignment = isMovingForward ? Alignment.bottomRight : Alignment.bottomLeft;
+              } else if (isPreviousItem) {
+                alignment = isMovingForward ? Alignment.bottomLeft : Alignment.bottomRight;
+              }
 
               return Material(
                 color: Color.lerp(Colors.transparent, Colors.transparent, t),
                 borderRadius: BorderRadius.circular(splashBorderRadius ?? 8),
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
-                  onTap: () => onTap.call(items.indexOf(item)),
+                  onTap: () => onTap.call(itemIndex),
                   focusColor: splashColor ?? _selectedColor.withOpacity(0.1),
-                  highlightColor:
-                      splashColor ?? _selectedColor.withOpacity(0.1),
+                  highlightColor: splashColor ?? _selectedColor.withOpacity(0.1),
                   splashColor: splashColor ?? _selectedColor.withOpacity(0.1),
                   hoverColor: splashColor ?? _selectedColor.withOpacity(0.1),
-                  child: Stack(children: <Widget>[
-                    Padding(
-                      padding: itemPadding -
-                          (enablePaddingAnimation
-                              ? EdgeInsets.only(right: itemPadding.right * t)
-                              : EdgeInsets.zero),
-                      child: Row(
-                        children: [
-                          IconTheme(
-                            data: IconThemeData(
-                              color: Color.lerp(
-                                  _unselectedColor, _selectedColor, t),
-                              size: 24,
-                            ),
-                            child: item.icon,
-                          ),
-                        ],
-                      ),
-                    ),
-                    ClipRect(
-                      child: SizedBox(
-                        height: 40,
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          widthFactor: t,
-                          child: Padding(
-                            padding: EdgeInsetsDirectional.only(
-                                start: itemPadding.right / 0.63,
-                                end: itemPadding.right),
-                            child: DefaultTextStyle(
-                              style: TextStyle(
-                                color: Color.lerp(
-                                    _selectedColor.withOpacity(0.0),
-                                    _selectedColor,
-                                    t),
-                                fontWeight: FontWeight.w600,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: itemPadding -
+                            (enablePaddingAnimation ? EdgeInsets.only(right: itemPadding.right * t) : EdgeInsets.zero),
+                        child: Row(
+                          children: [
+                            IconTheme(
+                              data: IconThemeData(
+                                color: Color.lerp(_unselectedColor, _selectedColor, t),
+                                size: 24,
                               ),
+                              child: item.icon,
+                            ),
+                          ],
+                        ),
+                      ),
+                      ClipRect(
+                        child: SizedBox(
+                          height: 40,
+                          child: Align(
+                            alignment: alignment,
+                            widthFactor: t,
+                            child: Padding(
+                              padding: EdgeInsetsDirectional.only(start: itemPadding.right, end: itemPadding.right),
                               child: CircleAvatar(
-                                  radius: 2.5,
-                                  backgroundColor: dotIndicatorColor != null
-                                      ? dotIndicatorColor
-                                      : _selectedColor),
+                                radius: 3.0,
+                                backgroundColor: dotIndicatorColor != null ? dotIndicatorColor : _selectedColor,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ]),
+                    ],
+                  ),
                 ),
               );
             },
